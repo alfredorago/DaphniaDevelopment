@@ -8,10 +8,10 @@ module load kallisto
 # Create dated directory
 ResultDir= ../Results/$(Date +"%Y%m%d")/Kallisto
 mkdir -p $ResultDir
-echo "Results directory set to $ResultDir"
+echo 'Results directory set to $ResultDir'
 
 # Convert fasta files in kallisto indexes
 # Currently using only SIRV sequences from spike RNA spike in
 
-echo "Saving output indexes to $ResultDir"
-kallisto index -i $ResultDir/SIRV_index.idx ./SourceDatasets/SIRV/SIRV_transcripts.fasta
+echo 'Saving output indexes to $ResultDir'
+kallisto index -i $ResultDir/SIRV_index.idx ../SourceDatasets/SIRV/SIRV_transcripts.fasta
