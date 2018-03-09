@@ -6,7 +6,7 @@ module load OpenMPI/1.10.2
 module load kallisto
 
 # Create dated directory
-ResultDir= ./Results/$(Date +"%Y%m%d")/Kallisto
+ResultDir= ../Results/$(Date +"%Y%m%d")/Kallisto
 mkdir -p $ResultDir
 echo "Results directory set to $ResultDir"
 
