@@ -10,3 +10,6 @@ ResultDir= ./Results/$(Date +"%Y%m%d")/Kallisto
 mkdir -p $ResultDir
 
 # Convert fasta files in kallisto indexes
+# Currently using only SIRV sequences from spike RNA spike in
+
+kallisto index -i $ResultDir/SIRV_index.idx ./SourceDatasets/SIRV/SIRV_transcripts.fasta
