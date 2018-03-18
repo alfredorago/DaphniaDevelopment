@@ -23,6 +23,5 @@ while read sample; do
   echo -e "\nProcessing ${sample}"
   SampleDir=$ResultDir/${sample}
   mkdir -p $SampleDir
-  kallisto quant --index=$ResultDir/Dmagna_OrsiniSIRV_index.idx --output-dir=$SampleDir --threads=$Threads ../SourceDatasets/Alfredo_full_data/160922_D00255_0272_BHWLLTBCXX/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz
-  ../SourceDatasets/Alfredo_full_data/161102_D00200_0297_BH573CBCXY/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz  ../SourceDatasets/Alfredo_full_data/F17FTSEUET0053-03-20170720/Raw/${sample}/*.fq.gz  ../SourceDatasets/Alfredo_full_data/F17FTSEUET0053-07_DAPoxiR/Raw/${sample}/*.fq.gz  ../SourceDatasets/Alfredo_full_data/F17FTSEUET0053-14_DAPvswE/Raw/${sample}/*.fq.gz
+  kallisto quant --index=$ResultDir/Dmagna_OrsiniSIRV_index.idx --output-dir=$SampleDir --threads=$Threads ../SourceDatasets/Alfredo_full_data/160922_D00255_0272_BHWLLTBCXX/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz ../SourceDatasets/Alfredo_full_data/161102_D00200_0297_BH573CBCXY/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz  ../SourceDatasets/Alfredo_full_data/F17FTSEUET0053-03-20170720/Raw/${sample}/*.fq.gz  ../SourceDatasets/Alfredo_full_data/F17FTSEUET0053-07_DAPoxiR/Raw/${sample}/*.fq.gz  ../SourceDatasets/Alfredo_full_data/F17FTSEUET0053-14_DAPvswE/Raw/${sample}/*.fq.gz
 done <../SourceDatasets/Sample_IDs/SampleIDs.txt
