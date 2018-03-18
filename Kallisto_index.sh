@@ -14,4 +14,5 @@ echo "Results directory set to $ResultDir"
 # Currently using only SIRV sequences from spike RNA spike in
 
 echo "Saving output indexes to $ResultDir"
-kallisto index -i $ResultDir/SIRV_index.idx ../SourceDatasets/SIRV/SIRV_transcripts.fasta
+# Check how to use multiple files from kallisto
+kallisto index -i $ResultDir/Dmagna_OrsiniSIRV_index.idx ../SourceDatasets/SIRV/SIRV_transcripts.fasta ../SourceDatasets/Orsini2006_transcriptome/FromLuisa/Dmagna_total_transcripts.fasta
