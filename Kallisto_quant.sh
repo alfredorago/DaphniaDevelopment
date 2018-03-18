@@ -6,8 +6,8 @@ module load OpenMPI/1.10.2
 module load kallisto
 
 # Store run parmeters
-$Bootstraps=500
-$Threads=4
+Bootstraps=10
+Threads=4
 
 # Create dated directory
 ResultDir="../Results/$(date +"%Y%m%d")/Kallisto"
