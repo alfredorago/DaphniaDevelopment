@@ -18,7 +18,8 @@ echo "Results directory set to $ResultDir"
 
 while read sample; do
   echo -e "\nProcessing ${sample}"
-  mkdir -p $ResultDir/${sample}
+  SampleDir=$ResultDir/${sample}
+  mkdir -p $SampleDir
 #  kallisto quant -t 4 -b 100 -i Mus_musculus_GRCm38.idx -o results/"${sample}"-aligned --single -l 180 -s 30 "${sample}"
 done <../SourceDatasets/Sample_IDs/SampleIDs.txt
 
