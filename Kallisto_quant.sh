@@ -14,9 +14,8 @@ ResultDir="../Results/$(date +"%Y%m%d")/Kallisto"
 mkdir -p $ResultDir
 echo "Results directory set to $ResultDir"
 
-# For every sample name
-# from each sequencin run
-# extract paired fastq files
+# For every sample name (stored in file SampleIDs)
+# Read relevant folders in each sequencing run
 # Run kallisto quant
 # and save in specific folder
 
