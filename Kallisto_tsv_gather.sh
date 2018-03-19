@@ -13,7 +13,7 @@ mkdir -p $ResultDir/tsv
 echo "Results directory set to $ResultDir/tsv"
 
 # For every subdirectory of results copy content and rename as that directory
-for subdir in $(echo $ResultDir/*|grep '*[A-Z][0-9][0-9]$')
+for subdir in $(echo $ResultDir/*|grep '[A-Z]{1}[0-9]{2}$')
 do
   echo ${subdir}
   FileName=$(echo ${subdir}|grep -o '...$')
