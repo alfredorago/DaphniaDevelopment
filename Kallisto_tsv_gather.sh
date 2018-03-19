@@ -13,7 +13,7 @@ mkdir -p $ResultDir/tsv
 echo "Results directory set to $ResultDir/tsv"
 
 # For every subdirectory of results copy content and rename as that directory
-for subdir in $ResultDir/*/
+for subdir in $ResultDir/*
 do
   cp ${subdir}*.tsv $ResultDir/tsv/$subdir.tsv
 done
