@@ -9,10 +9,11 @@ module load kallisto
 # Create dated directory
 ResultDir="../Results/$(date +"%Y%m%d")/Kallisto/"
 mkdir -p $ResultDir
-echo "Results directory set to $ResultDir"
+mkdir -p $ResultDir/tsv
+echo "Results directory set to $ResultDir/tsv"
 
+# For every subdirectory of results copy content and rename as that directory
 for subdir in $ResultDir/*/
 do
-  echo ${subdir}
-  #cp $subdir/*.tsv $subdir.tsv
+  cp ${subdir}*.tsv $ResultDir/tsv/$subdir.tsv
 done
