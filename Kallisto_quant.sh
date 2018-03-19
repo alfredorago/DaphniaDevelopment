@@ -5,11 +5,28 @@ module load GCC/4.9.3-2.25
 module load OpenMPI/1.10.2
 module load kallisto
 
+# Store run parmeters
+Bootstraps=100
+Threads=20
+
 # Create dated directory
 ResultDir="../Results/$(date +"%Y%m%d")/Kallisto"
 mkdir -p $ResultDir
-mkdir -p $ResultDir/F58
 echo "Results directory set to $ResultDir"
 
-# Quantify transcripts (testing one folder only)
-kallisto quant --index=$ResultDir/Dmagna_OrsiniSIRV_index.idx --output-dir=$ResultDir/F58 --threads=4 --plaintext ../SourceDatasets/Alfredo_full_data/160922_D00255_0272_BHWLLTBCXX/Project_KT_Alfredo/Sample_F58/*.fastq.gz
+# For every sample name (stored in file SampleIDs)
+# Read relevant folders in each sequencing run
+# Run kallisto quant
+# and save in specific folder
+
+while read sample; do
+  echo -e "\nProcessing ${sample}"
+# Create results directory
+  SampleDir=$ResultDir/${sample}
+  mkdir -p $SampleDir
+  # Find all files which match input sample in BHAM and BGI folders
+  BHAM_runs=$(find ../SourceDatasets/Alfredo_full_data/*/Raw/${sample}/*.fq.gz)
+  BGI_runs=$(find ../SourceDatasets/Alfredo_full_data/*/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz)
+# Run Kallisto quant
+  kallisto quant --index=$ResultDir/Dmagna_OrsiniSIRV_index.idx --output-dir=$SampleDir --threads=$Threads -b=Bootstraps $BHAM_runs $BGI_runs
+done <../SourceDatasets/Sample_IDs/SampleIDs.txt
