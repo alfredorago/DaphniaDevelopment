@@ -16,5 +16,6 @@ echo "Results directory set to $ResultDir/tsv"
 for subdir in $ResultDir/*
 do
   echo ${subdir}
-  cp ${subdir}/abundance.tsv $ResultDir/tsv/${subdir}.tsv
+  FileName=(echo ${subdir}|grep -o '...$')
+  cp ${subdir}/abundance.tsv $ResultDir/tsv/$FileName.tsv
 done
