@@ -24,6 +24,6 @@ while read sample; do
   SampleDir=$ResultDir/${sample}
   mkdir -p $SampleDir
 # Find all BGI files which match input sample and pass to Kallisto quant
-  BGI_runs=$(find ../SourceDatasets/Alfredo_full_data/*/${sample}/*.fq.gz)
+  BGI_runs=$(find ../SourceDatasets/Alfredo_full_data/*/Raw/${sample}/*.fq.gz)
   kallisto quant --index=$ResultDir/Dmagna_OrsiniSIRV_index.idx --output-dir=$SampleDir --threads=$Threads -b=Bootstraps ../SourceDatasets/Alfredo_full_data/160922_D00255_0272_BHWLLTBCXX/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz ../SourceDatasets/Alfredo_full_data/161102_D00200_0297_BH573CBCXY/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz $BGI_runs
 done <../SourceDatasets/Sample_IDs/SampleIDs.txt
