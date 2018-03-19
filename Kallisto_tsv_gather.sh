@@ -16,5 +16,5 @@ echo "Results directory set to $ResultDir/tsv"
 for subdir in $ResultDir/*
 do
   echo ${subdir}
-  cp ${ResultDir}/${subdir}/abundance.tsv $ResultDir/tsv/${subdir}.tsv
+  cp ${subdir}/abundance.tsv $ResultDir/tsv/${subdir}.tsv
 done
