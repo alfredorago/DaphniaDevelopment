@@ -21,9 +21,12 @@ echo "Results directory set to $ResultDir"
 
 while read sample; do
   echo -e "\nProcessing ${sample}"
+# Create results directory
   SampleDir=$ResultDir/${sample}
   mkdir -p $SampleDir
-# Find all BGI files which match input sample and pass to Kallisto quant
-  BGI_runs=$(find ../SourceDatasets/Alfredo_full_data/*/Raw/${sample}/*.fq.gz)
-  kallisto quant --index=$ResultDir/Dmagna_OrsiniSIRV_index.idx --output-dir=$SampleDir --threads=$Threads -b=Bootstraps ../SourceDatasets/Alfredo_full_data/160922_D00255_0272_BHWLLTBCXX/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz ../SourceDatasets/Alfredo_full_data/161102_D00200_0297_BH573CBCXY/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz $BGI_runs
+  # Find all files which match input sample in BHAM and BGI folders
+  BHAM_runs=$(find ../SourceDatasets/Alfredo_full_data/*/Raw/${sample}/*.fq.gz)
+  BGI_runs=$(find ../SourceDatasets/Alfredo_full_data/*/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz)
+# Run Kallisto quant
+  kallisto quant --index=$ResultDir/Dmagna_OrsiniSIRV_index.idx --output-dir=$SampleDir --threads=$Threads -b=Bootstraps $BHAM_runs $BGI_runs
 done <../SourceDatasets/Sample_IDs/SampleIDs.txt
