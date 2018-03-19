@@ -7,7 +7,7 @@ module load OpenMPI/1.10.2
 module load kallisto
 
 # Create dated directory
-ResultDir="../Results/$(date +"%Y%m%d")/Kallisto/"
+ResultDir="../Results/$(date +"%Y%m%d")/Kallisto"
 mkdir -p $ResultDir
 mkdir -p $ResultDir/tsv
 echo "Results directory set to $ResultDir/tsv"
