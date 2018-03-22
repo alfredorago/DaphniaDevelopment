@@ -33,9 +33,19 @@ tpmTable = countTable
 
 # For loop across files to load them into memory and save relevant column to respective dataset
 for (sample in dataFiles){
+  # Keep track of process
   print(paste ("Processing ", sample))
+  # Load dataframe
   tempFrame = read.table(file = file.path(dataDir, sample), row.names = 1, header = T)
+  # Check matching between rows in main data and sample
+  if (isTRUE(all.equal(row.names(countTable), row.names(tempFrame)))) {
+    print("Ordering of transcripts matches main frame")
+    } else {
+    print("Different order of transcripts between input and output frame") 
+    break}
+  # Get only sample ID corresponding to output columns
   sampleID = str_extract(string = sample, pattern = "^[^.]*")
+  # Extract columns of interest and assign to output columns
   countTable[,sampleID] = tempFrame[,"est_counts"]
   tpmTable[,sampleID] = tempFrame[,"tpm"]
   rm(tempFrame)
