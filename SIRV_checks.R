@@ -12,18 +12,29 @@ metadata = read.csv(file = "../Results/20180322/Metadata_compiler/sample_metadat
 
 # Subset only to SIRV transcripts
 tpm = tpm[grep(pattern = "SIRV", x = row.names(tpm)),]
+tpm$transcriptID = row.names(tpm)
 # Reshape to flat data format
 SIRVdata = melt(tpm)
-names(SIRVdata) = c("sampleID", "tpm")  
+names(SIRVdata) = c("transcriptID", "sampleID", "tpm")  
 # Add metadata
 SIRVdata = merge(SIRVdata, metadata, 
                  by.x = "sampleID", by.y = "row.names",
                  all.x = T, all.y = F)
 
-# Check consistency of SIRV transcripts across samples
+# Check differences between SIRV transcripts across samples
+ggplot(data = SIRVdata, aes(x = tpm, col = sirv)) +
+  geom_density() + 
+  scale_x_log10() + 
+  facet_wrap(~transcriptID)
+
+# Check using boxplots
+ggplot(data = SIRVdata, aes(y = tpm, x = sirv)) +
+  geom_boxplot(notch = T) + 
+  scale_y_log10() + 
+  facet_wrap(~transcriptID)
 
 
 # Sorted by batch and extraction date
 
 
-# Normalize by SIRV
+# Check for significant differences between different SIRV mixes
