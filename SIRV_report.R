@@ -9,20 +9,30 @@ library(stringr)
 # Load datasets
 tpm = read.csv(file = "../Results/20180322/Read_compiler/tpmTable.csv", 
                header = T, row.names = 1)
+rpkm = read.csv(file = "../Results/20180322/Read_compiler/countTable.csv",
+                header = T, row.names = 1)
 metadata = read.csv(file = "../Results/20180322/Metadata_compiler/sample_metadata.csv", 
                     header = T, row.names = 1)
 SIRV_annot = read.csv(file = "../SourceDatasets/Sample_Metadata/SIRV_annotation_fromLexogen.csv", 
                       header = T, row.names = 1)
-SIRV_annot$geneID = str_extract(string = row.names(SIRV_annot), pattern = "SIRV.?")
 
 # Subset only to SIRV transcripts
 tpm = tpm[grep(pattern = "SIRV", x = row.names(tpm)),]
 tpm$transcriptID = as.factor(row.names(tpm))
 
-# Reshape to flat data format
-SIRVdata = melt(tpm)
-names(SIRVdata) = c("transcriptID", "sampleID", "tpm")  
+rpkm = rpkm[grep(pattern = "SIRV", x = row.names(rpkm)),]
+rpkm$transcriptID = as.factor(row.names(rpkm))
 
+# Reshape to flat data format
+tpm = melt(tpm)
+names(tpm) = c("transcriptID", "sampleID", "tpm")  
+
+rpkm = melt(rpkm)
+names(rpkm) = c('transcriptID', 'sampleID', 'rpkm')
+
+SIRVdata = merge(tpm, rpkm)
+
+rm(tpm, rpkm)
 # Add sample metadata
 SIRVdata = merge(SIRVdata, metadata, 
                  by.x = "sampleID", by.y = "row.names",
@@ -34,20 +44,110 @@ SIRV_conc$transcriptID = row.names(SIRV_conc)
 SIRV_conc = melt(SIRV_conc, id.vars = "transcriptID")
 names(SIRV_conc) = c("transcriptID", "sirv", "conc")
 SIRV_conc$sirv = as.factor(str_extract(string = SIRV_conc$sirv, pattern = "^[:alnum:]*"))
-merge(x = SIRVdata, y = SIRV_conc, 
-      by = c("transcriptID", "sirv"), 
-      all.x = T, all.y = T)
+SIRVdata = merge(x = SIRVdata, y = SIRV_conc, 
+                 by = c("transcriptID", "sirv"), 
+                 all.x = T, all.y = T)
+
+# Store SIRV concentrations for axis labeling
+conc_breaks = unique(na.exclude(SIRV_conc$conc))[order(unique(na.exclude(SIRV_conc$conc)))]
+conc_breaks = round(x = conc_breaks, digits = 2)
 
 # Check format
 head(SIRVdata)
 
 ### Check read counts for zero abundance SIRVs (True Negatives)
-head(SIRV_annot)
+table(is.na(SIRVdata$conc), SIRVdata$tpm>10)
+mosaicplot(table(is.na(SIRVdata$conc)==F, SIRVdata$tpm>10), shade = T)
+mosaicplot(table(is.na(SIRVdata$conc)==F, SIRVdata$rpkm>10), shade = T)
 
-ggplot()
+ggplot(data = SIRVdata, mapping = aes(x = tpm+1E-2, col = is.na(conc))) +
+  geom_density() + 
+  scale_x_log10(breaks = c(10^(-3:5)), name = 'TPM + 1E-2') + 
+  scale_y_continuous(name = 'Density') +
+  scale_color_brewer(type = 'qual', palette = 2, name = 'Absence') +
+  facet_grid(sirv~.) +
+  geom_vline(xintercept = 6)
+## False negative threshold of 6 TPM is sufficient to remove the bulk of false negatives
+## E2 shows much greater variance, check for possible batch effects
+
+ggplot(data = SIRVdata, mapping = aes(x = rpkm+1, col = is.na(conc))) +
+  geom_density() + 
+  scale_x_log10(breaks = c(10^(-3:5)), name = 'RPKM + 1') + 
+  scale_y_continuous(name = 'Density') +
+  scale_color_brewer(type = 'qual', palette = 2, name = 'Absence') +
+  facet_grid(sirv~.) +
+  geom_vline(xintercept = 11)
 
 
 ### Check minimal concentration of detected SIRVs (Detection Threshold)
+ggplot(data = SIRVdata, mapping = aes(x = conc, y = tpm)) +
+  geom_violin(na.rm = T, mapping = aes(group=conc), 
+              draw_quantiles = c(.05,.5,.95),
+              trim = T, scale = 'count') + 
+  geom_smooth(method = 'lm', mapping = aes(group=1)) +
+  scale_y_log10(limits = c(1E-1,5E3), name = 'TPM') +
+  scale_x_log10(breaks = conc_breaks, minor_breaks = NULL, name = 'FemtoMoles per MicroLiter') +
+  ggtitle(label = 'TPM vs Spike-in concentrations \nBars indicate 5th and 95th percentiles')
+
+ggplot(data = SIRVdata, mapping = aes(x = conc, y = rpkm)) +
+  geom_violin(na.rm = T, mapping = aes(group=conc), 
+              draw_quantiles = c(.05,.5,.95),
+              trim = T, scale = 'count') + 
+  geom_smooth(method = 'lm', mapping = aes(group=1)) +
+  scale_y_log10(limits = c(1E-1,5E3), name = 'RPKM') +
+  scale_x_log10(breaks = conc_breaks, minor_breaks = NULL, name = 'FemtoMoles per MicroLiter') +
+  ggtitle(label = 'RPKM vs Spike-in concentrations \nBars indicate 5th and 95th percentiles')
 
 
 ### Plot variance vs mean SIRV expression within treatment (quatitative threshold)
+
+MV = ddply(na.exclude(SIRVdata), 
+           .variables = .(transcriptID, sirv), summarise, 
+           meanTPM = mean(log10(tpm), na.rm = T),
+           varTPM = var(log10(tpm), na.rm = T),
+           meanRPKM = mean(log10(rpkm), na.rm = T),
+           varRPKM = var(log10(rpkm), na.rm = T),
+           conc = conc[1])
+MV$cvTPM = MV$varTPM/MV$meanTPM
+MV$cvRPKM = MV$varRPKM/MV$meanRPKM
+
+ggplot(data = MV, mapping = aes(x = meanRPKM, y = cvRPKM, col = sirv)) +
+  geom_point() + 
+  scale_y_continuous(trans = 'log10') + 
+  scale_x_continuous(trans = 'log10') + 
+  geom_vline(xintercept = 6) + 
+  geom_rug()
+
+ggplot(data = MV, mapping = aes(x = conc, y = cvTPM)) +
+  geom_violin(mapping = aes(group = conc), draw_quantiles = c(0.05,0.5,0.95)) + 
+  scale_y_continuous(limits = c(1E-2,.1)) + 
+  scale_x_continuous(breaks = conc_breaks, minor_breaks = NULL) +
+  geom_smooth(mapping = aes(group = 1)) +
+  geom_point(position = 'jitter', aes(col = sirv))
+
+### CV stable and low for all samples, but lower at conc => .5 
+## Only holds for log variance/log mean
+## variance stabilize with DESeq, then repeat
+
+
+## Check why some samples have no spike-ins for some species
+# Which samples and which spike-ins?
+MV[which(is.nan(MV$varE)),]
+
+# Isolate most concentrated false negative
+QC1 = SIRVdata[which(SIRVdata$transcriptID=='SIRV311'),]
+ggplot(data = QC1, mapping = aes(x = conc, y = tpm)) + geom_point() + facet_wrap(~sirv)
+QC1 = QC1[which(QC1$sirv=='E2'),]
+ggplot(data = QC1, mapping = aes(x = RNA_conc, y = tpm)) + geom_point()
+
+# Cross-reference on QC2
+QC2 = SIRVdata[which(SIRVdata$transcriptID=='SIRV303'),]
+ggplot(data = QC2, mapping = aes(x = conc, y = tpm)) + geom_point() + facet_wrap(~sirv)
+QC2 = QC2[which(QC21$sirv=='E2'),]
+ggplot(data = QC2, mapping = aes(x = RNA_conc, y = tpm)) + geom_point()
+
+# Do some samples lack the spike-ins? 
+# Check on QC1 
+QC1$sampleID[which(QC1$tpm==0)]%in%QC2$sampleID[which(QC2$tpm==0)]
+QC2$sampleID[which(QC2$tpm==0)]%in%QC1$sampleID[which(QC1$tpm==0)]
+
