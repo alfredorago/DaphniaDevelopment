@@ -134,15 +134,17 @@ ggplot(data = MV, mapping = aes(x = mean, y = cv, col = sirv)) +
   geom_point() + 
   scale_y_continuous() + 
   scale_x_continuous() + 
-  geom_smooth(method = 'lm')
+  geom_smooth(method = 'lm') +
   geom_rug()
 
-ggplot(data = MV, mapping = aes(x = conc, y = cvTPM)) +
-  geom_violin(mapping = aes(group = conc), draw_quantiles = c(0.05,0.5,0.95)) + 
-  scale_y_continuous(limits = c(1E-2,.1)) + 
-  scale_x_continuous(breaks = conc_breaks, minor_breaks = NULL) +
-  geom_smooth(mapping = aes(group = 1)) +
-  geom_point(position = 'jitter', aes(col = sirv))
+ggplot(data = MV, mapping = aes(x = conc, y = cv)) + 
+  geom_violin(mapping = aes(group = conc), draw_quantiles = c(.05,.5,.95)) +
+  geom_point(position = 'jitter', mapping = aes(col = sirv)) +
+  scale_y_continuous(limits = c(1E-4,1), trans = 'log10') + 
+  scale_x_continuous(breaks = conc_breaks, minor_breaks = NULL, trans = 'log10') +
+  geom_smooth(mapping = aes(group = 1), method = 'lm') 
+
+
 
 ### CV stable and low for all samples, but lower at conc => .5 
 ## Only holds for log variance/log mean
