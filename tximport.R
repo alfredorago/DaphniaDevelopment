@@ -39,7 +39,7 @@ sampleData$stage = as.factor(sampleData$stage)
 ### Import counts and convert to integers for DESeq analyses
 txTranscript = tximport(files = files, type = 'kallisto', tx2gene = IDtable, 
                         abundanceCol = 'tpm', lengthCol = 'length', 
-                        txOut = F)
+                        txOut = T)
 deseqTranscript = DESeqDataSetFromTximport(txi = txTranscript, 
                                            colData = sampleData, 
                                            design = ~ stage + treatment + stage:treatment + sirv)
