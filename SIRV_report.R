@@ -1,16 +1,24 @@
 ### SIRV report
 
+# Clean workspace and print date
+rm(list=ls())
+date()
+
 # load libraries
 library(ggplot2)
 library(reshape2)
 library(plyr)
 library(stringr)
+library(DESeq2)
 
 # Load datasets
 tpm = read.csv(file = "../Results/20180322/Read_compiler/tpmTable.csv", 
                header = T, row.names = 1)
 rpkm = read.csv(file = "../Results/20180322/Read_compiler/countTable.csv",
                 header = T, row.names = 1)
+counts = read.csv(file = '../Results/20180328/tximport/DESeq_transcript_counts.csv', 
+                  header = T, row.names = 1)
+
 metadata = read.csv(file = "../Results/20180322/Metadata_compiler/sample_metadata.csv", 
                     header = T, row.names = 1)
 SIRV_annot = read.csv(file = "../SourceDatasets/Sample_Metadata/SIRV_annotation_fromLexogen.csv", 
@@ -23,7 +31,7 @@ tpm$transcriptID = as.factor(row.names(tpm))
 rpkm = rpkm[grep(pattern = "SIRV", x = row.names(rpkm)),]
 rpkm$transcriptID = as.factor(row.names(rpkm))
 
-# Reshape to flat data format
+# Reshape to flat data format and combine in single dataframe
 tpm = melt(tpm)
 names(tpm) = c("transcriptID", "sampleID", "tpm")  
 
@@ -100,22 +108,33 @@ ggplot(data = SIRVdata, mapping = aes(x = conc, y = rpkm)) +
 
 
 ### Plot variance vs mean SIRV expression within treatment (quatitative threshold)
+# Use integer pseudocounts
+counts = counts[grep(pattern = 'SIRV', x = row.names(counts)),]
+# Correct for variance/mean correlation
+vst_counts = varianceStabilizingTransformation(object = as.matrix(counts), blind = T)
+vst_counts = melt(vst_counts)
+names(vst_counts) = c('transcriptID', 'sampleID', 'counts')
+# Add sample metadata and SIRV concentration
+vst_counts = merge(vst_counts, metadata, 
+                   by.x = "sampleID", by.y = "row.names",
+                   all.x = T, all.y = F)
+vst_counts = merge(x = vst_counts, y = SIRV_conc, 
+                   by = c("transcriptID", "sirv"), 
+                   all.x = T, all.y = T)
+head(vst_counts)
 
-MV = ddply(na.exclude(SIRVdata), 
+MV = ddply(na.exclude(vst_counts), 
            .variables = .(transcriptID, sirv), summarise, 
-           meanTPM = mean(log10(tpm), na.rm = T),
-           varTPM = var(log10(tpm), na.rm = T),
-           meanRPKM = mean(log10(rpkm), na.rm = T),
-           varRPKM = var(log10(rpkm), na.rm = T),
+           mean = mean(counts, na.rm = T),
+           var = var(counts, na.rm = T),
            conc = conc[1])
-MV$cvTPM = MV$varTPM/MV$meanTPM
-MV$cvRPKM = MV$varRPKM/MV$meanRPKM
+MV$cv = MV$var/MV$mean
 
-ggplot(data = MV, mapping = aes(x = meanRPKM, y = cvRPKM, col = sirv)) +
+ggplot(data = MV, mapping = aes(x = mean, y = cv, col = sirv)) +
   geom_point() + 
-  scale_y_continuous(trans = 'log10') + 
-  scale_x_continuous(trans = 'log10') + 
-  geom_vline(xintercept = 6) + 
+  scale_y_continuous() + 
+  scale_x_continuous() + 
+  geom_smooth(method = 'lm')
   geom_rug()
 
 ggplot(data = MV, mapping = aes(x = conc, y = cvTPM)) +
