@@ -16,12 +16,15 @@ files = file.path('../Results/20180319/Kallisto', row.names(metadata) , 'abundan
 # Create transcript to gene reference table
 tpm = read.table(file = '../Results/20180319/Kallisto/F58/abundance.tsv', header = T, row.names = 1)
 IDtable = data.frame(transcriptID = row.names(tpm))
-# Create gene names as substrings: SIRV and one numeric & any character before t
-sapply(X = IDtable$transcriptID, FUN = function(x) {
+# Create gene names as substrings: SIRV and one numeric & any non t character after the start
+IDtable$geneID = sapply(X = IDtable$transcriptID, FUN = function(x) {
   if (grepl(pattern = 'Dapma', x = x)) {
     str_extract(string = x, pattern = '^[^t]*')
-  } else next
-})
+  } else if (grepl(pattern = 'SIRV', x = x)) {
+    str_extract(string = x, pattern = 'SIRV.?')
+  }
+}
+)
 
 # 
-tximport(files = files, files = 'kallisto')
+tximport(files = files, files = 'kallisto', tx2gene = IDtable)
