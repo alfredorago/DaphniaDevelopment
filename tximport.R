@@ -1,4 +1,4 @@
-### Convert h5 files into tsv 
+### Convert h5 files into tsv
 
 # Clean workspace and print date
 rm(list=ls())
@@ -31,17 +31,17 @@ IDtable$geneID = sapply(X = IDtable$transcriptID, FUN = function(x) {
 )
 
 ### Import sample annotation and subset to sequenced samples
-sampleData = read.csv('../Results/20180322/Metadata_compiler/sample_metadata.csv', 
+sampleData = read.csv('../Results/20180322/Metadata_compiler/sample_metadata.csv',
                   header = T, row.names = 1)
 sampleData = sampleData[which(row.names(sampleData)%in%str_extract(string = files, pattern = '[A-Z][0-9]{2}')),]
-sampleData$stage = as.factor(sampleData$stage) 
+sampleData$stage = as.factor(sampleData$stage)
 
 ### Import counts and convert to integers for DESeq analyses
-txTranscript = tximport(files = files, type = 'kallisto', tx2gene = IDtable, 
-                        abundanceCol = 'tpm', lengthCol = 'length', 
+txTranscript = tximport(files = files, type = 'kallisto', tx2gene = IDtable,
+                        abundanceCol = 'tpm', lengthCol = 'length',
                         txOut = T)
-deseqTranscript = DESeqDataSetFromTximport(txi = txTranscript, 
-                                           colData = sampleData, 
+deseqTranscript = DESeqDataSetFromTximport(txi = txTranscript,
+                                           colData = sampleData,
                                            design = ~ stage + treatment + stage:treatment + sirv)
 ### Save for further analyses
 write.csv(x = counts(deseqTranscript), file = file.path(outdir, 'DESeq_transcript_counts.csv'))
