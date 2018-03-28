@@ -10,7 +10,7 @@ library(stringr)
 
 # Set output path
 outdir = file.path("../Results", format(Sys.Date(), format = "%Y%m%d"), "tximport")
-dir.create(outdir)
+dir.create(outdir, recursive = T)
 
 # Set path of data files
 files = list.dirs(path = '../Results/20180319/Kallisto/', full.names = F)
@@ -33,7 +33,7 @@ IDtable$geneID = sapply(X = IDtable$transcriptID, FUN = function(x) {
 ### Import sample annotation and subset to sequenced samples
 sampleData = read.csv('../Results/20180322/Metadata_compiler/sample_metadata.csv', 
                   header = T, row.names = 1)
-sampleData = design[which(row.names(design)%in%str_extract(string = files, pattern = '[A-Z][0-9]{2}')),]
+sampleData = sampleData[which(row.names(sampleData)%in%str_extract(string = files, pattern = '[A-Z][0-9]{2}')),]
 sampleData$stage = as.factor(sampleData$stage) 
 
 ### Import counts and convert to integers for DESeq analyses
@@ -44,4 +44,4 @@ deseqTranscript = DESeqDataSetFromTximport(txi = txTranscript,
                                            colData = sampleData, 
                                            design = ~ stage + treatment + stage:treatment + sirv)
 ### Save for further analyses
-save(list = deseqTranscript, file = file.path(outdir, 'deseq_counts.RData'))
+write.csv(x = counts(deseqTranscript), file = file.path(outdir, 'DESeq_transcript_counts.csv'))
