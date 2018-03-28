@@ -7,13 +7,12 @@ date()
 library(tximport)
 library(stringr)
 
-# Load experiment data
-metadata = read.csv(file = "../Results/20180322/Metadata_compiler/sample_metadata.csv", header = T, row.names = 1)
-
 # Set path of data files
-files = file.path('../Results/20180319/Kallisto', row.names(metadata) , 'abundance.h5')
+files = list.dirs(path = '../Results/20180319/Kallisto/', full.names = F)
+files = grep(pattern = '^[A-Z][0-9]{2}$', x = files, value = T)
+files = file.path('../Results/20180319/Kallisto', files , 'abundance.h5')
 
-# Create transcript to gene reference table
+### Create transcript to gene reference table from first sample
 tpm = read.table(file = '../Results/20180319/Kallisto/F58/abundance.tsv', header = T, row.names = 1)
 IDtable = data.frame(transcriptID = row.names(tpm))
 # Create gene names as substrings: SIRV and one numeric & any non t character after the start
