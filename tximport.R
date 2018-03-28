@@ -3,17 +3,21 @@
 # Clean workspace and print date
 rm(list=ls())
 date()
+
 # Load libraries
 library(tximport)
 library(stringr)
 
-# Load experiment data
-metadata = read.csv(file = "../Results/20180322/Metadata_compiler/sample_metadata.csv", header = T, row.names = 1)
+# Set output path
+outdir = file.path("../Results", format(Sys.Date(), format = "%Y%m%d"), "tximport")
+dir.create(outdir)
 
 # Set path of data files
-files = file.path('../Results/20180319/Kallisto', row.names(metadata) , 'abundance.h5')
+files = list.dirs(path = '../Results/20180319/Kallisto/', full.names = F)
+files = grep(pattern = '^[A-Z][0-9]{2}$', x = files, value = T)
+files = file.path('../Results/20180319/Kallisto', files , 'abundance.h5')
 
-# Create transcript to gene reference table
+### Create transcript to gene reference table from first sample
 tpm = read.table(file = '../Results/20180319/Kallisto/F58/abundance.tsv', header = T, row.names = 1)
 IDtable = data.frame(transcriptID = row.names(tpm))
 # Create gene names as substrings: SIRV and one numeric & any non t character after the start
@@ -26,5 +30,18 @@ IDtable$geneID = sapply(X = IDtable$transcriptID, FUN = function(x) {
 }
 )
 
-# 
-tximport(files = files, files = 'kallisto', tx2gene = IDtable)
+### Import sample annotation and subset to sequenced samples
+sampleData = read.csv('../Results/20180322/Metadata_compiler/sample_metadata.csv', 
+                  header = T, row.names = 1)
+sampleData = design[which(row.names(design)%in%str_extract(string = files, pattern = '[A-Z][0-9]{2}')),]
+sampleData$stage = as.factor(sampleData$stage) 
+
+### Import counts and convert to integers for DESeq analyses
+txTranscript = tximport(files = files, type = 'kallisto', tx2gene = IDtable, 
+                        abundanceCol = 'tpm', lengthCol = 'length', 
+                        txOut = F)
+deseqTranscript = DESeqDataSetFromTximport(txi = txTranscript, 
+                                           colData = sampleData, 
+                                           design = ~ stage + treatment + stage:treatment + sirv)
+### Save for further analyses
+save(list = deseqTranscript, file = file.path(outdir, 'deseq_counts.RData'))
