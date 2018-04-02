@@ -127,8 +127,15 @@ MV = ddply(na.exclude(vst_counts),
            .variables = .(transcriptID, sirv), summarise, 
            mean = mean(counts, na.rm = T),
            var = var(counts, na.rm = T),
+           sd = sd(counts, na.rm = T),
+           gsd = sd(log10(counts), na.rm = T),
+           n = length(conc),
            conc = conc[1])
-MV$cv = MV$var/MV$mean
+# CV calculated with normality assumptions!
+MV$cv = (MV$sd/MV$mean) * (1 + 1/(4*MV$n))
+# Geometric cv
+MV$gcv = sqrt(exp(MV$gsd^2)-1)
+
 
 ggplot(data = MV, mapping = aes(x = mean, y = cv, col = sirv)) +
   geom_point() + 
@@ -140,16 +147,27 @@ ggplot(data = MV, mapping = aes(x = mean, y = cv, col = sirv)) +
 ggplot(data = MV, mapping = aes(x = conc, y = cv)) + 
   geom_violin(mapping = aes(group = conc), draw_quantiles = c(.05,.5,.95)) +
   geom_point(position = 'jitter', mapping = aes(col = sirv)) +
-  scale_y_continuous(limits = c(1E-4,1), trans = 'log10') + 
+  scale_y_continuous(limits = c(5E-3,.5), breaks = c(10^(-3:2)), trans = 'log10') + 
   scale_x_continuous(breaks = conc_breaks, minor_breaks = NULL, trans = 'log10') +
-  geom_smooth(mapping = aes(group = 1), method = 'lm') 
+  geom_smooth(mapping = aes(group = 1), method = 'gam') 
 
+ggplot(data = MV, mapping = aes(x = conc, y = var)) + 
+  geom_violin(mapping = aes(group = conc), draw_quantiles = c(.05, .5, .95)) +
+  geom_point(position = 'jitter', mapping = aes(col = sirv)) +
+  scale_y_continuous(limits = c(1E-3,5), trans = 'log10') + 
+  scale_x_continuous(breaks = conc_breaks, minor_breaks = NULL, trans = 'log10') +
+  geom_smooth(mapping = aes(group = 1), method = 'gam') 
+
+ggplot(data = MV, mapping = aes(x = conc, y = gcv)) + 
+  geom_violin(mapping = aes(group = conc), draw_quantiles = c(.05, .5, .95)) +
+  geom_point(position = 'jitter', mapping = aes(col = sirv)) +
+  scale_y_continuous(limits = c(2E-3,.1), trans = 'log10') + 
+  scale_x_continuous(breaks = conc_breaks, minor_breaks = NULL, trans = 'log10') +
+  geom_smooth(mapping = aes(group = 1), method = 'gam') 
 
 
 ### CV stable and low for all samples, but lower at conc => .5 
 ## Only holds for log variance/log mean
-## variance stabilize with DESeq, then repeat
-
 
 ## Check why some samples have no spike-ins for some species
 # Which samples and which spike-ins?
@@ -168,7 +186,6 @@ QC2 = QC2[which(QC21$sirv=='E2'),]
 ggplot(data = QC2, mapping = aes(x = RNA_conc, y = tpm)) + geom_point()
 
 # Do some samples lack the spike-ins? 
-# Check on QC1 
 QC1$sampleID[which(QC1$tpm==0)]%in%QC2$sampleID[which(QC2$tpm==0)]
 QC2$sampleID[which(QC2$tpm==0)]%in%QC1$sampleID[which(QC1$tpm==0)]
-
+# NO
