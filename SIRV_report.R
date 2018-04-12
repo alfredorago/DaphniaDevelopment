@@ -88,6 +88,7 @@ ggplot(data = SIRVdata, mapping = aes(x = rpkm+1, col = is.na(conc))) +
 
 
 ### Check minimal concentration of detected SIRVs (Detection Threshold)
+# Using TPMs
 ggplot(data = SIRVdata, mapping = aes(x = conc, y = tpm)) +
   geom_violin(na.rm = T, mapping = aes(group=conc), 
               draw_quantiles = c(.05,.5,.95),
@@ -95,16 +96,34 @@ ggplot(data = SIRVdata, mapping = aes(x = conc, y = tpm)) +
   geom_smooth(method = 'lm', mapping = aes(group=1)) +
   scale_y_log10(limits = c(1E-1,5E3), name = 'TPM') +
   scale_x_log10(breaks = conc_breaks, minor_breaks = NULL, name = 'FemtoMoles per MicroLiter') +
-  ggtitle(label = 'TPM vs Spike-in concentrations \nBars indicate 5th and 95th percentiles')
-
+  ggtitle(label = 'TPM vs Spike-in concentrations \nBars indicate 5th and 95th percentiles') +
+  geom_hline(yintercept = c(10,50,100,200,400,800))
+# Using RPKM
 ggplot(data = SIRVdata, mapping = aes(x = conc, y = rpkm)) +
   geom_violin(na.rm = T, mapping = aes(group=conc), 
               draw_quantiles = c(.05,.5,.95),
               trim = T, scale = 'count') + 
   geom_smooth(method = 'lm', mapping = aes(group=1)) +
-  scale_y_log10(limits = c(1E-1,5E3), name = 'RPKM') +
+  scale_y_log10(limits = c(1E-1,5E5), name = 'RPKM') +
   scale_x_log10(breaks = conc_breaks, minor_breaks = NULL, name = 'FemtoMoles per MicroLiter') +
-  ggtitle(label = 'RPKM vs Spike-in concentrations \nBars indicate 5th and 95th percentiles')
+  ggtitle(label = 'RPKM vs Spike-in concentrations \nBars indicate 5th and 95th percentiles') +
+  geom_hline(yintercept = c(70, 420, 840, 1680, 3360, 6720))
+# TPM distributions have lower variance
+# 0.03 (1/32th) measures as 1/5 and 1/6th in TPM and RPKM respectively
+# 0.25 fMol/ul lower detection threshold
+# Corresponds to 55 TPM (median)
+# Calibration curve censored to detection limit:
+ggplot(data = SIRVdata, mapping = aes(x = conc, y = tpm)) +
+  geom_violin(na.rm = T, mapping = aes(group=conc), 
+              draw_quantiles = c(.05,.5,.95),
+              trim = T, scale = 'count') + 
+  geom_smooth(method = 'lm', mapping = aes(group=1)) +
+  scale_y_continuous(limits = c(1E-1,5E3), trans = 'log10', 
+                     name = 'TPM') +
+  scale_x_continuous(limits = c(0.15,6), breaks = conc_breaks[-1], trans = 'log10',
+                     minor_breaks = NULL, name = 'FemtoMoles per MicroLiter') +
+  ggtitle(label = 'TPM vs Spike-in concentrations \nBars indicate 5th and 95th percentiles')
+
 
 
 ### Plot variance vs mean SIRV expression within treatment (quatitative threshold)
