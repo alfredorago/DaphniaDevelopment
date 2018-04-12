@@ -10,5 +10,5 @@
 #SBATCH -N 1
 #SBATCH --tasks-per-node=20
 # Run index construction and quantification
-Kallisto_index.sh
-Kallisto_quant.sh
+./SIRV_only/Kallisto_index_SIRV.sh
+./SIRV_only/Kallisto_quant_SIRV.sh

@@ -11,4 +11,4 @@ mkdir -p $ResultDir
 echo "Results directory set to $ResultDir"
 
 # Convert fasta files in kallisto indexes
-kallisto index -i $ResultDir/SIRV_only.idx ../../Results/20180412/SIRV_extract_exons/SIRV_exons.fasta
+kallisto index -i $ResultDir/SIRV_only.idx ../Results/20180412/SIRV_extract_exons/SIRV_exons.fasta

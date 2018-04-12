@@ -10,7 +10,7 @@ Bootstraps=100
 Threads=20
 
 # Create dated directory
-ResultDir="../../Results/$(date +"%Y%m%d")/SIRV_only"
+ResultDir="../Results/$(date +"%Y%m%d")/SIRV_only"
 mkdir -p $ResultDir
 echo "Results directory set to $ResultDir"
 
@@ -25,8 +25,8 @@ while read sample; do
   SampleDir=$ResultDir/${sample}
   mkdir -p $SampleDir
   # Find all files which match input sample in BHAM and BGI folders
-  BHAM_runs=$(find ../../SourceDatasets/Alfredo_full_data/*/Raw/${sample}/*.fq.gz)
-  BGI_runs=$(find ../../SourceDatasets/Alfredo_full_data/*/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz)
+  BHAM_runs=$(find ../SourceDatasets/Alfredo_full_data/*/Raw/${sample}/*.fq.gz)
+  BGI_runs=$(find ../SourceDatasets/Alfredo_full_data/*/Project_KT_Alfredo/Sample_${sample}/*.fastq.gz)
 # Run Kallisto quant
   kallisto quant --index=$ResultDir/SIRV_only.idx --output-dir=$SampleDir --threads=$Threads -b=Bootstraps $BHAM_runs $BGI_runs
 done <../SourceDatasets/Sample_IDs/SampleIDs.txt
