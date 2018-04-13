@@ -7,6 +7,7 @@ date()
 # Load libraries
 library(tximport)
 library(stringr)
+library(DESeq2)
 
 # Set output path
 outdir = file.path("../Results", format(Sys.Date(), format = "%Y%m%d"), "tximport")
