@@ -2,7 +2,7 @@
 ## Job name
 #SBATCH -J Kallisto_Dmagna_SIRVonly
 ## Walltime
-#SBATCH -t 2:00:00
+#SBATCH -t 10:00:00
 ## Mail status updates
 #SBATCH --mail-user=alfredo.rago@gmail.com
 #SBATCH --mail-type=END
